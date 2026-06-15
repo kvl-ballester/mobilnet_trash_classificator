@@ -4,6 +4,7 @@ from time import perf_counter, sleep
 from utils import preprocess_image, get_tflite
 from collections import deque, defaultdict
 import numpy as np
+from camera import Camera
 
 
 BUFFER_LENGTH = 3
@@ -30,11 +31,8 @@ with open("model/class_names.txt", "r") as f:
 buffer = deque(maxlen=BUFFER_LENGTH)
 
 
-cap = cv2.VideoCapture(0)
-# warm-up cámara
-for _ in range(5):
-    cap.read()
-
+# --- Camera ---
+cam = Camera()
 
 def top_k_predictions(pred, class_names, k=3):
     idx = np.argsort(pred)[::-1][:k]
@@ -59,9 +57,8 @@ def group_full(pred, class_names, class_to_family):
 
 try:
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Error reading from webcam")
+        frame = cam.read()
+        if frame is None:
             break
         
         img = preprocess_image(frame, is_batch=False) #shape (224,224,3)
