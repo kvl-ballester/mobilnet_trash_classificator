@@ -17,8 +17,9 @@ tflite = get_tflite()
 
 def is_raspberry_pi():
     try:
-        with open("/proc/cpuinfo", "r") as f:
-            return "raspberry" in f.read().lower()
+        with open("/proc/device-tree/model", "r") as f:
+            model = f.read().lower()
+            return "raspberry" in model
     except Exception:
         return False
 
