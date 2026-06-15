@@ -1,0 +1,11 @@
+carton
+carton_tetrapak
+carton_tetrapak_cereal
+carton_tetrapak_juice
+metal_food_can
+metal_soda_can
+metal_soda_can_damaged
+paper_bag
+plastic_bag
+plastic_bottle
+plastic_yogurt
