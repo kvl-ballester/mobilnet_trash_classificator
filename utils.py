@@ -15,6 +15,13 @@ def get_tflite():
 
 tflite = get_tflite()
 
+def is_raspberry_pi():
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            return "raspberry" in f.read().lower()
+    except Exception:
+        return False
+
 # --- Preprocessing like MobileNetV2 (tf mode) ---
 def preprocess_image(frame: np.ndarray, is_batch: bool = True) -> np.ndarray:
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
