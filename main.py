@@ -10,6 +10,7 @@ from camera import Camera
 BUFFER_LENGTH = 3
 TOP_K = 5
 CONFIDENCE = 0.95
+ALLOWED_FAMILIES = ["carton", "plastic", "metal"]
 
 # --- Load TFLite model ---
 tflite = get_tflite()
@@ -25,14 +26,15 @@ interpreter.allocate_tensors()
 
 with open("model/class_names.txt", "r") as f:
     class_names = [line.strip() for line in f.readlines()]
-    class_to_family = {c: c.split("_")[0] for c in class_names}
+    class_to_family = {c: c.split("_")[0] for c in class_names if c.split("_")[0] in ALLOWED_FAMILIES}
+    
 
 # --- BUFFER ---
 buffer = deque(maxlen=BUFFER_LENGTH)
 
 
 # --- Camera ---
-cam = Camera()
+cam = Camera(use_opencv=False)
 
 def top_k_predictions(pred, class_names, k=3):
     idx = np.argsort(pred)[::-1][:k]
@@ -47,10 +49,13 @@ def group_prediction(top_predictions):
 
     return grouped
 
-def group_full(pred, class_names, class_to_family):
+def group_full(pred, class_names, class_to_family: dict):
     grouped = defaultdict(float)
 
     for p, c in zip(pred, class_names):
+        family = class_to_family.get(c, None)
+        if family is None:
+            continue
         grouped[class_to_family[c]] += float(p)
 
     return grouped
@@ -71,8 +76,8 @@ try:
             output = interpreter.get_tensor(output_details[0]["index"])
 
             pred_mean = output.mean(axis=0)
-
             grouped_predictions = group_full(pred_mean, class_names, class_to_family)
+            print(grouped_predictions)
             best_class = max(grouped_predictions, key=grouped_predictions.get)
             
             if grouped_predictions[best_class] >= CONFIDENCE:
