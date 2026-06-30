@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from typing import List, Tuple
+from collections import defaultdict
 
 TARGET_SIZE = 224
 SCALE_SIZE = 256
@@ -12,8 +13,6 @@ def get_tflite():
         from tensorflow import lite as tflite
     return tflite
 
-
-tflite = get_tflite()
 
 def is_raspberry_pi():
     try:
@@ -38,6 +37,20 @@ def preprocess_image(frame: np.ndarray, is_batch: bool = True) -> np.ndarray:
 
     return frame_normalized
 
+def top_k_predictions(pred, class_names, k=3):
+    idx = np.argsort(pred)[::-1][:k]
+    return {class_names[i]: float(pred[i]) for i in idx}
+
+def group_full(pred, class_names, class_to_family: dict):
+    grouped = defaultdict(float)
+
+    for p, c in zip(pred, class_names):
+        family = class_to_family.get(c, None)
+        if family is None:
+            continue
+        grouped[class_to_family[c]] += float(p)
+
+    return grouped
 
 def print_inference_info(frame: np.ndarray, detection_str: str, preprocess_time: float, inference_time: float, input_shape: Tuple[int, ...]) -> None:
     """
