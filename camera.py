@@ -1,8 +1,9 @@
 import cv2
 
 class Camera:
-    def __init__(self, resolution=(1280, 720), use_opencv=False):
+    def __init__(self, resolution=(1280, 720), use_opencv=False, show=False):
         self.resolution = resolution
+        self.show = show
 
         if not use_opencv:
             try:
@@ -37,7 +38,7 @@ class Camera:
         self.mode = "cv2"
         print("Usando OpenCV")
 
-    def read(self, show: bool = False):
+    def read(self):
         frame = None
         if self.mode == "picamera":
             frame = self.picam2.capture_array()
@@ -47,7 +48,7 @@ class Camera:
             if not ret:
                 return None
         
-        if show:
+        if self.show:
             cv2.imshow("Camera", frame)
             cv2.waitKey(1)
             
